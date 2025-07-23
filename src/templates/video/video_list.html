@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Video Library - Pomegranate{% endblock %}
+
+{% block extra_css %}
+<style>
+    .video-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        height: 100%;
+    }
+
+    .video-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .video-thumbnail {
+        position: relative;
+        overflow: hidden;
+        background: #f8f9fa;
+        height: 200px;
+    }
+
+    .video-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .video-card:hover .video-thumbnail img {
+        transform: scale(1.05);
+    }
+
+    .video-thumbnail::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, #6f42c1, #fd7e14);
+        opacity: 0.1;
+        z-index: 1;
+    }
+
+    .play-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 2;
+    }
+
+    .video-card:hover .play-overlay {
+        opacity: 1;
+    }
+
+    .duration-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        z-index: 2;
+    }
+
+    .video-info {
+        padding: 1.25rem;
+    }
+
+    .video-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+        font-size: 1.1rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .video-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+    }
+
+    .video-meta {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: #868e96;
+    }
+
+    .upload-date {
+        display: flex;
+        align-items: center;
+    }
+
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+
+    .search-box {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 0.75rem 1.25rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-box:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+    }
+
+    .btn-filter {
+        border-radius: 20px;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .btn-filter:hover, .btn-filter.active {
+        background: #6f42c1;
+        border-color: #6f42c1;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #6f42c1, #fd7e14);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-video me-3"></i>Video Library
+                </h1>
+                <p class="lead mb-0">
+                    {% if videos %}
+                        Discover {{ videos|length }} amazing video{{ videos|length|pluralize }} in our collection
+                    {% else %}
+                        Your video streaming destination
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="#" class="btn btn-light btn-lg">
+                    <i class="fas fa-upload me-2"></i>Upload Video
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filters and Search Section -->
+    <div class="filters-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control search-box border-start-0"
+                           placeholder="Search videos..." id="videoSearch">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex flex-wrap justify-content-md-end">
+                    <button class="btn btn-filter active" data-filter="all">
+                        <i class="fas fa-th me-1"></i>All
+                    </button>
+                    <button class="btn btn-filter" data-filter="recent">
+                        <i class="fas fa-clock me-1"></i>Recent
+                    </button>
+                    <button class="btn btn-filter" data-filter="popular">
+                        <i class="fas fa-fire me-1"></i>Popular
+                    </button>
+                    <button class="btn btn-filter" data-filter="duration">
+                        <i class="fas fa-stopwatch me-1"></i>Duration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Videos Grid -->
+    {% if videos %}
+        <div class="row" id="videosGrid">
+            {% for video in videos %}
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-4 video-item"
+                     data-title="{{ video.name|lower }}"
+                     data-upload-date="{{ video.uploaded_at|date:'Y-m-d' }}">
+                    <div class="card video-card h-100">
+                        <div class="video-thumbnail">
+                            {% if video.thumbnail %}
+                                <img src="{{ video.thumbnail.url }}" alt="{{ video.name }}" class="card-img-top">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                    <i class="fas fa-video fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+
+                            <!-- Play Overlay -->
+                            <div class="play-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+
+                            <!-- Duration Badge -->
+                            {% if video.duration %}
+                                <span class="duration-badge">
+                                    {{ video.duration|time:"H:i:s" }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="video-info">
+                            <h5 class="video-title">{{ video.name }}</h5>
+
+                            {% if video.description %}
+                                <p class="video-description">{{ video.description }}</p>
+                            {% endif %}
+
+                            <div class="video-meta">
+                                <span class="upload-date">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    {{ video.uploaded_at|timesince }} ago
+                                </span>
+                            </div>
+
+                            <div class="mt-3">
+                                <a href="#" class="btn btn-primary btn-sm me-2">
+                                    <i class="fas fa-play me-1"></i>Watch Now
+                                </a>
+                                <a href="#" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-info-circle me-1"></i>Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <nav aria-label="Video pagination" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-video-slash"></i>
+            <h3 class="mt-3 mb-2">No Videos Found</h3>
+            <p class="mb-4">It looks like there are no videos in your library yet.</p>
+            <a href="#" class="btn btn-primary btn-lg">
+                <i class="fas fa-upload me-2"></i>Upload Your First Video
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('videoSearch');
+    const videoItems = document.querySelectorAll('.video-item');
+
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+
+        videoItems.forEach(function(item) {
+            const title = item.getAttribute('data-title');
+            if (title.includes(searchTerm)) {
+                item.style.display = 'block';
+                item.classList.add('fade-in');
+            } else {
+                item.style.display = 'none';
+                item.classList.remove('fade-in');
+            }
+        });
+    });
+
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.btn-filter');
+
+    filterButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+
+            const filter = this.getAttribute('data-filter');
+
+            // Simple filter logic (you can expand this based on your needs)
+            videoItems.forEach(function(item) {
+                switch(filter) {
+                    case 'all':
+                        item.style.display = 'block';
+                        break;
+                    case 'recent':
+                        // Show videos from last 7 days
+                        const uploadDate = new Date(item.getAttribute('data-upload-date'));
+                        const weekAgo = new Date();
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        item.style.display = uploadDate > weekAgo ? 'block' : 'none';
+                        break;
+                    default:
+                        item.style.display = 'block';
+                }
+            });
+        });
+    });
+
+    // Add smooth animations
+    const style = document.createElement('style');
+    style.textContent = `
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}
