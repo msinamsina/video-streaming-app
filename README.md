@@ -36,7 +36,7 @@ A modern Django-based video streaming application that provides HLS (HTTP Live S
 
 <div align="center">
    <img src="./assets/video_list.JPG" alt="Video Player Interface" width="80%" />
-   <p><i>The responsive Video.js player with HLS streaming</i></p>
+   <p><i>Clean and organized video library interface for easy browsing</i></p>
 </div>
 
 ### Video Player Demo
