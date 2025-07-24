@@ -4,7 +4,7 @@ from django.db import models
 # Create your models here.
 class Video(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to="videos/")
     hls_path = models.CharField(max_length=255, blank=True, null=True)

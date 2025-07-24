@@ -285,10 +285,10 @@
                             </div>
 
                             <div class="mt-3">
-                                <a href="#" class="btn btn-primary btn-sm me-2">
+                                <a href="{% url 'video_detail' video.id %}" class="btn btn-primary btn-sm me-2">
                                     <i class="fas fa-play me-1"></i>Watch Now
                                 </a>
-                                <a href="#" class="btn btn-outline-secondary btn-sm">
+                                <a href="{% url 'video_detail' video.id %}" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-info-circle me-1"></i>Details
                                 </a>
                             </div>

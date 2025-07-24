@@ -1,0 +1,591 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ video.name }} - Pomegranate Video Streaming{% endblock %}
+
+{% block extra_css %}
+<!-- Video.js CSS -->
+<link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet">
+
+<style>
+    .video-player-container {
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .video-js {
+        width: 100%;
+        height: 500px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .video-js .vjs-big-play-button {
+        font-size: 2.5rem;
+        line-height: 2.3;
+        height: 2.5em;
+        width: 2.5em;
+        border-radius: 50%;
+        background-color: rgba(43, 51, 63, 0.7);
+        border: 0.06666em solid #fff;
+        color: #fff;
+    }
+
+    .video-js .vjs-big-play-button:hover {
+        background-color: rgba(111, 66, 193, 0.8);
+    }
+
+    .video-js .vjs-control-bar {
+        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3), transparent);
+    }
+
+    .video-info-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .video-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .video-meta {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .video-meta i {
+        margin-right: 0.5rem;
+        width: 16px;
+    }
+
+    .video-description {
+        line-height: 1.6;
+        color: #555;
+        margin-bottom: 1.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .sidebar-card h5 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .related-video {
+        display: flex;
+        padding: 0.75rem;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        margin-bottom: 0.75rem;
+        border: 1px solid transparent;
+    }
+
+    .related-video:hover {
+        background-color: #f8f9fa;
+        text-decoration: none;
+        color: inherit;
+        border-color: #dee2e6;
+        transform: translateY(-1px);
+    }
+
+    .related-thumbnail {
+        width: 120px;
+        height: 68px;
+        background: linear-gradient(135deg, #e9ecef, #dee2e6);
+        border-radius: 4px;
+        margin-right: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .related-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .related-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .related-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+        overflow: hidden;
+        color: #333;
+    }
+
+    .related-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .comments-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .comment {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 0;
+    }
+
+    .comment:last-child {
+        border-bottom: none;
+    }
+
+    .comment-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 0.75rem;
+    }
+
+    .comment-author {
+        font-weight: 600;
+        color: #333;
+        margin-right: 0.5rem;
+    }
+
+    .comment-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .comment-text {
+        color: #555;
+        line-height: 1.5;
+    }
+
+    .quality-selector {
+        margin-bottom: 1rem;
+    }
+
+    .video-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        padding: 1rem 0;
+        border-top: 1px solid #e9ecef;
+        margin-top: 1rem;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: #333;
+    }
+
+    @media (max-width: 768px) {
+        .video-js {
+            height: 250px;
+        }
+
+        .video-title {
+            font-size: 1.5rem;
+        }
+
+        .action-buttons {
+            justify-content: center;
+        }
+
+        .related-thumbnail {
+            width: 80px;
+            height: 45px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Video Player -->
+            <div class="video-player-container">
+                {% if video.hls_path %}
+                    <!-- HLS Video Player with Video.js -->
+                    <video
+                        id="my-video"
+                        class="video-js vjs-default-skin"
+                        controls
+                        preload="auto"
+                        width="100%"
+                        height="500"
+                        poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}"
+                        data-setup="{}"
+                    >
+                        <source src="{{ hls_url }}" type="application/x-mpegURL">
+                        <p class="vjs-no-js">
+                            To view this video please enable JavaScript, and consider upgrading to a web browser that
+                            <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>.
+                        </p>
+                    </video>
+                {% else %}
+                    <!-- Regular Video Player with Video.js -->
+                    <video
+                        id="my-video"
+                        class="video-js vjs-default-skin"
+                        controls
+                        preload="metadata"
+                        width="100%"
+                        height="500"
+                        poster="{% if video.thumbnail %}{{ video.thumbnail.url }}{% endif %}"
+                        data-setup="{}"
+                    >
+                        <source src="{{ video.file.url }}" type="video/mp4">
+                        <p class="vjs-no-js">
+                            To view this video please enable JavaScript, and consider upgrading to a web browser that
+                            <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>.
+                        </p>
+                    </video>
+                {% endif %}
+            </div>
+
+            <!-- Video Information -->
+            <div class="video-info-card">
+                <h1 class="video-title">{{ video.name }}</h1>
+
+                <div class="video-meta">
+                    <span><i class="fas fa-calendar-alt"></i>Uploaded {{ video.uploaded_at|date:"M d, Y" }}</span>
+                    {% if video.duration %}
+                    <span class="ms-3"><i class="fas fa-clock"></i>{{ video.duration }}</span>
+                    {% endif %}
+                    <span class="ms-3"><i class="fas fa-file-video"></i>{{ video.file.size|filesizeformat }}</span>
+                </div>
+
+                {% if video.description %}
+                <div class="video-description">
+                    {{ video.description|linebreaks }}
+                </div>
+                {% endif %}
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary btn-action">
+                        <i class="fas fa-thumbs-up"></i>
+                        Like
+                    </button>
+                    <button class="btn btn-outline-secondary btn-action">
+                        <i class="fas fa-thumbs-down"></i>
+                        Dislike
+                    </button>
+                    <button class="btn btn-outline-secondary btn-action">
+                        <i class="fas fa-share"></i>
+                        Share
+                    </button>
+                    <button class="btn btn-outline-secondary btn-action">
+                        <i class="fas fa-download"></i>
+                        Download
+                    </button>
+                    <button class="btn btn-outline-secondary btn-action">
+                        <i class="fas fa-plus"></i>
+                        Add to Playlist
+                    </button>
+                </div>
+
+                <div class="video-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-eye"></i>
+                        <span class="stat-value">1,234</span> views
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span class="stat-value">98</span> likes
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-comment"></i>
+                        <span class="stat-value">12</span> comments
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <h5><i class="fas fa-comments me-2"></i>Comments (12)</h5>
+
+                <!-- Comment Form -->
+                <form class="mb-4">
+                    <div class="mb-3">
+                        <textarea class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Post Comment
+                    </button>
+                </form>
+
+                <!-- Sample Comments -->
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-avatar">J</div>
+                        <span class="comment-author">John Doe</span>
+                        <span class="comment-time">2 hours ago</span>
+                    </div>
+                    <div class="comment-text">
+                        Great video! Really enjoyed watching this. The quality is excellent and the content is very informative.
+                    </div>
+                </div>
+
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-avatar">S</div>
+                        <span class="comment-author">Sarah Wilson</span>
+                        <span class="comment-time">5 hours ago</span>
+                    </div>
+                    <div class="comment-text">
+                        Thanks for sharing this! Looking forward to more content like this.
+                    </div>
+                </div>
+
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-avatar">M</div>
+                        <span class="comment-author">Mike Johnson</span>
+                        <span class="comment-time">1 day ago</span>
+                    </div>
+                    <div class="comment-text">
+                        Awesome video quality! The streaming is smooth and the content is engaging.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quality Selector -->
+            <div class="sidebar-card">
+                <h5><i class="fas fa-cog"></i>Playback Quality</h5>
+                <div class="quality-selector">
+                    <select class="form-select">
+                        <option value="auto">Auto (Recommended)</option>
+                        <option value="1080p">1080p HD</option>
+                        <option value="720p">720p HD</option>
+                        <option value="480p">480p</option>
+                        <option value="360p">360p</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Related Videos -->
+            <div class="sidebar-card">
+                <h5><i class="fas fa-play-circle"></i>Related Videos</h5>
+
+                <!-- Sample Related Videos -->
+                <a href="#" class="related-video">
+                    <div class="related-thumbnail">
+                        <i class="fas fa-play-circle fa-2x"></i>
+                    </div>
+                    <div class="related-info">
+                        <div class="related-title">Sample Video Title 1</div>
+                        <div class="related-meta">15:30 • 2 days ago</div>
+                    </div>
+                </a>
+
+                <a href="#" class="related-video">
+                    <div class="related-thumbnail">
+                        <i class="fas fa-play-circle fa-2x"></i>
+                    </div>
+                    <div class="related-info">
+                        <div class="related-title">Another Great Video to Watch</div>
+                        <div class="related-meta">8:45 • 1 week ago</div>
+                    </div>
+                </a>
+
+                <a href="#" class="related-video">
+                    <div class="related-thumbnail">
+                        <i class="fas fa-play-circle fa-2x"></i>
+                    </div>
+                    <div class="related-info">
+                        <div class="related-title">Tutorial: How to Stream Videos</div>
+                        <div class="related-meta">22:15 • 2 weeks ago</div>
+                    </div>
+                </a>
+
+                <a href="#" class="related-video">
+                    <div class="related-thumbnail">
+                        <i class="fas fa-play-circle fa-2x"></i>
+                    </div>
+                    <div class="related-info">
+                        <div class="related-title">Best Practices for Video Streaming</div>
+                        <div class="related-meta">12:30 • 3 weeks ago</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Video Details -->
+            <div class="sidebar-card">
+                <h5><i class="fas fa-info-circle"></i>Video Details</h5>
+                <div class="detail-item mb-2">
+                    <strong>Format:</strong> MP4
+                </div>
+                <div class="detail-item mb-2">
+                    <strong>Resolution:</strong> 1920x1080
+                </div>
+                <div class="detail-item mb-2">
+                    <strong>Frame Rate:</strong> 30 FPS
+                </div>
+                <div class="detail-item mb-2">
+                    <strong>Bitrate:</strong> 2.5 Mbps
+                </div>
+                {% if video.hls_path %}
+                <div class="detail-item mb-2">
+                    <strong>Streaming:</strong> HLS Enabled
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Video.js JavaScript -->
+<script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
+<!-- Video.js HLS plugin for better HLS support -->
+<script src="https://unpkg.com/@videojs/http-streaming@3.0.2/dist/videojs-http-streaming.min.js"></script>
+
+<script>
+    // Initialize Video.js
+    document.addEventListener('DOMContentLoaded', function() {
+        const videoElement = document.getElementById('my-video');
+
+        if (videoElement) {
+            const player = videojs('my-video', {
+                fluid: true,
+                responsive: true,
+                playbackRates: [0.5, 1, 1.25, 1.5, 2],
+                controls: true,
+                preload: 'metadata',
+                html5: {
+                    hls: {
+                        enableLowInitialPlaylist: true,
+                        smoothQualityChange: true,
+                        overrideNative: true
+                    }
+                }
+            }, function() {
+                // Player is ready
+                console.log('Video.js player is ready');
+
+                // Add event listeners
+                this.on('play', function() {
+                    console.log('Video started playing');
+                    // You can add analytics tracking here
+                });
+
+                this.on('pause', function() {
+                    console.log('Video paused');
+                });
+
+                this.on('ended', function() {
+                    console.log('Video ended');
+                });
+
+                this.on('error', function(error) {
+                    console.error('Video player error:', error);
+                });
+
+                // Handle quality changes
+                this.on('qualitychange', function() {
+                    console.log('Quality changed');
+                });
+            });
+
+            // Handle quality selection from custom dropdown
+            const qualitySelect = document.querySelector('.quality-selector select');
+            if (qualitySelect) {
+                qualitySelect.addEventListener('change', function() {
+                    console.log('Quality changed to:', this.value);
+                    // You can implement quality switching logic here
+                });
+            }
+        }
+
+        // Handle action buttons
+        document.querySelectorAll('.btn-action').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                console.log('Action clicked:', action);
+
+                // Add visual feedback
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.add('fa-spin');
+                    setTimeout(() => {
+                        icon.classList.remove('fa-spin');
+                    }, 1000);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
