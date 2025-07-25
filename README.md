@@ -13,14 +13,6 @@
 
 A modern Django-based video streaming application that provides HLS (HTTP Live Streaming) video playback with automatic video conversion, thumbnail generation, and a responsive web interface.deo Streaming App
 
-<div align="center">
-
-```
-🍎 POMEGRANATE VIDEO STREAMING 🍎
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Django • HLS • FFmpeg • Video.js
-      Modern Video Streaming Platform
-```
 
 ## Demo
 ### Video List Demo
