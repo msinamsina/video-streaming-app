@@ -22,15 +22,6 @@ A modern Django-based video streaming application that provides HLS (HTTP Live S
       Modern Video Streaming Platform
 ```
 
-[![Django](https://img.shields.io/badge/Django-5.2.4-green.svg)](https://djangoproject.com/)
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-</div>
-
-A modern Django-based video streaming application that provides HLS (HTTP Live Streaming) video playback with automatic video conversion, thumbnail generation, and a responsive web interface.
-
 ## Demo
 ### Video List Demo
 
